@@ -6,7 +6,7 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 import subprocess
-import multiprocessing
+import webbrowser
 
 ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
 
@@ -118,6 +118,15 @@ def execute_command(cmd):
         os.system('control')
     elif cmd == "клавиатура":
         os.system('osk')
+    elif cmd == "гугл":
+        url = "https://www.google.com"
+        webbrowser.open(url)
+    elif cmd == "покойо":
+        url == "https://www.pocoyo.com"
+        webbrowser.open(url)
+    elif cmd == "18+":
+        url = f"https://www.google.com/search?q=18+ с обезьянами смотреть бесплатно"
+        webbrowser.open(url)
     else:
         print(f"Неизвестная команда: {cmd}")
 
