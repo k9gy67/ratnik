@@ -179,24 +179,13 @@ def execute_command(cmd):
     elif cmd == "18+":
         url = f"https://www.google.com/search?q=18+ с обезьянами смотреть бесплатно"
         webbrowser.open(url)
-    elif cmd == "майнер":
-        def cpu_worker():
-         while True:
-          x = 0
-          for i in range(1000000):
-            x += i ** 2
-          time.sleep(0.001)
-          print('запущен майнер')
-        num_cores = multiprocessing.cpu_count()
-        processes = []
-
-    for _ in range(num_cores):
-        p = multiprocessing.Process(target=cpu_worker)
-        p.start()
-        processes.append(p)
-
-    for p in processes:
-        p.join()
+    elif cmd == "67":
+        root = tk.Tk()
+        root.title("67")
+        root.geometry("400x300")
+        label = tk.Label(root, text="67", foreground="white", background="blue", font=("Arial", 35))
+        label.pack(pady=20)
+        root.mainloop()
     else:
         win_error("сообщение", f"{cmd}")
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -209,6 +198,3 @@ while True:
     print(f"Подключение от {addr}")
     client_handler = threading.Thread(target=handle_client, args=(client,))
     client_handler.start()
-
-if __name__ == "__main__":
-    cpu_worker()
